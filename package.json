@@ -1,0 +1,27 @@
+{
+  "name": "dictionary-race",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "查字典大挑戰 — 適合國小二年級的雙人查字典競賽遊戲 (iPad 橫向)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "icons": "node scripts/generate-icons.mjs",
+    "check:questions": "node scripts/check-questions.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^11.11.17",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

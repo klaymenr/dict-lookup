@@ -1,0 +1,32 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(72px, 10vh, 96px);
+  padding: 0 clamp(1.5rem, 4vw, 3rem);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  font-size: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: transform 100ms ease, background-color 120ms ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.primary {
+  background: var(--color-timer);
+  color: var(--color-ink);
+}
+
+.secondary {
+  background: var(--color-card);
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+
+.block {
+  width: 100%;
+}

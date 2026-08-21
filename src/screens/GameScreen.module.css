@@ -1,0 +1,44 @@
+.screen {
+  position: relative;
+  display: grid;
+  /* 4. 玩家 A 46% / 中央計時器 8% / 玩家 B 46% */
+  grid-template-columns: 46fr 8fr 46fr;
+  gap: clamp(0.25rem, 0.8vw, 0.75rem);
+  height: 100%;
+  padding: clamp(0.5rem, 1.5vh, 1rem);
+  background: var(--color-bg);
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(250, 248, 243, 0.92);
+  z-index: 10;
+}
+
+.overlayText {
+  font-size: clamp(4rem, 18vh, 11rem);
+  font-weight: 800;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.overlayGo {
+  color: var(--color-timer);
+}
+
+.timeUp {
+  font-size: clamp(3rem, 12vh, 7rem);
+  font-weight: 800;
+  color: var(--color-wrong);
+  letter-spacing: 0.1em;
+}

@@ -1,0 +1,59 @@
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.dial {
+  position: relative;
+  width: min(100%, clamp(84px, 9vw, 132px));
+  aspect-ratio: 1;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.track {
+  fill: none;
+  stroke: rgba(48, 46, 43, 0.1);
+}
+
+.progress {
+  fill: none;
+  stroke: var(--color-timer);
+  stroke-linecap: round;
+  transition: stroke 300ms ease;
+}
+
+.warning {
+  stroke: var(--color-wrong);
+}
+
+.value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+.valueWarning {
+  color: var(--color-wrong);
+}
+
+.label {
+  font-size: var(--font-ui-small);
+  color: var(--color-ink-soft);
+  letter-spacing: 0.16em;
+  text-align: center;
+}

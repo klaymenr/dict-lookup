@@ -1,0 +1,67 @@
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: var(--choice-min-height);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  width: 100%;
+}
+
+.choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--choice-min-height);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-card);
+  border: 3px solid var(--color-line);
+  border-radius: var(--radius);
+  color: var(--color-ink);
+  font-weight: 600;
+  line-height: 1.1;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.radical {
+  font-size: var(--font-radical);
+}
+
+.word {
+  font-size: var(--font-word);
+}
+
+.wrong {
+  border-color: var(--color-wrong);
+  background: rgba(217, 108, 95, 0.1);
+  color: var(--color-wrong);
+}
+
+.correct {
+  border-color: var(--color-correct);
+  background: rgba(103, 146, 103, 0.14);
+  color: var(--color-correct);
+}
+
+/* 31. 顏色不是唯一提示：答錯有 ✕、答對有 ✓ */
+.mark {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.6rem;
+  font-size: var(--font-ui-small);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.star {
+  position: absolute;
+  font-size: clamp(1.1rem, 2vh, 1.5rem);
+  color: var(--color-timer);
+  pointer-events: none;
+}

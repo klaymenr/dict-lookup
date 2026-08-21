@@ -1,0 +1,27 @@
+.card {
+  /* 在剩餘空間中垂直置中，國字永遠是畫面最醒目的元素 */
+  align-self: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-card);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: clamp(1.25rem, 4vh, 2.5rem) 1.5rem;
+  gap: clamp(0.5rem, 1.5vh, 1.25rem);
+}
+
+.hint {
+  font-size: var(--font-ui-small);
+  color: var(--color-ink-soft);
+  letter-spacing: 0.12em;
+}
+
+.character {
+  font-size: var(--font-character);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--color-ink);
+}

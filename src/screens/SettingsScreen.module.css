@@ -1,0 +1,68 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 2vh, 1.25rem);
+  height: 100%;
+  padding: clamp(1rem, 3vh, 2rem);
+  overflow-y: auto;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(1.75rem, 5vh, 2.75rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.6vh, 1rem);
+  width: min(760px, 92vw);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(0.5rem, 1.6vh, 1rem) clamp(0.75rem, 2vw, 1.5rem);
+  background: var(--color-card);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius);
+}
+
+.label {
+  font-size: var(--font-ui);
+  font-weight: 700;
+}
+
+.options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.option {
+  min-height: 64px;
+  min-width: 88px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 3px solid var(--color-line);
+  background: var(--color-bg);
+  font-size: var(--font-ui-small);
+  font-weight: 700;
+}
+
+.selected {
+  border-color: var(--color-timer);
+  background: rgba(229, 165, 66, 0.22);
+}
+
+.note {
+  font-size: var(--font-ui-small);
+  color: var(--color-ink-soft);
+  text-align: center;
+  max-width: min(760px, 92vw);
+}

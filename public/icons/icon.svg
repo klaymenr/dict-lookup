@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="查字典大挑戰">
+  <rect width="64" height="64" rx="14" fill="rgb(229,165,66)"/>
+  <text x="32" y="45" font-size="40" text-anchor="middle"
+    font-family="PingFang TC, Noto Sans TC, sans-serif" fill="rgb(48,46,43)">查</text>
+</svg>
