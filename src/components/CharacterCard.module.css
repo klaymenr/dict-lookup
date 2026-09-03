@@ -25,3 +25,9 @@
   line-height: 1.05;
   color: var(--color-ink);
 }
+
+/* 詞語階段：國字被 emoji 遮住，玩家要自己記得剛才那個字 */
+.emoji {
+  font-size: var(--font-character);
+  line-height: 1.05;
+}

@@ -7,7 +7,7 @@ interface Props {
   player2Name: string;
   player1Score: number;
   player2Score: number;
-  isNewRecord: boolean;
+  targetScore: number;
   onPlayAgain: () => void;
   onBackHome: () => void;
 }
@@ -17,16 +17,19 @@ export function ResultScreen({
   player2Name,
   player1Score,
   player2Score,
-  isNewRecord,
+  targetScore,
   onPlayAgain,
   onBackHome,
 }: Props) {
   const winner =
-    player1Score === player2Score ? '平手！' : `${player1Score > player2Score ? player1Name : player2Name} 獲勝！`;
+    player1Score === player2Score
+      ? '平手！'
+      : `${player1Score > player2Score ? player1Name : player2Name} 獲勝！`;
 
   return (
     <div className={styles.screen}>
-      <h1 className={styles.heading}>時間到！</h1>
+      <h1 className={styles.heading}>比賽結束！</h1>
+      <p className={styles.subheading}>先答對 {targetScore} 個字的人獲勝</p>
 
       <div className={styles.scores}>
         {[
@@ -42,6 +45,7 @@ export function ResultScreen({
           >
             <span className={styles.playerName}>{player.name}</span>
             <span className={styles.score}>{player.score}</span>
+            <span className={styles.unit}>個字</span>
           </motion.div>
         ))}
       </div>
@@ -55,8 +59,6 @@ export function ResultScreen({
       >
         {winner}
       </motion.p>
-
-      {isNewRecord && <p className={styles.record}>🎉 新的最高分紀錄！</p>}
 
       <div className={styles.actions}>
         <ActionButton onClick={onPlayAgain} autoFocus>

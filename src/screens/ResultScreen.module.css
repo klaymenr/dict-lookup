@@ -58,10 +58,16 @@
   color: var(--color-correct);
 }
 
-.record {
+.subheading {
+  margin: 0;
   font-size: var(--font-ui-small);
-  color: var(--color-timer);
-  font-weight: 700;
+  color: var(--color-ink-soft);
+  letter-spacing: 0.08em;
+}
+
+.unit {
+  font-size: var(--font-ui-small);
+  color: var(--color-ink-soft);
 }
 
 .actions {

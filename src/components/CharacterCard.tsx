@@ -5,21 +5,31 @@ import styles from './CharacterCard.module.css';
 interface Props {
   character: string;
   stage: QuestionStage;
+  /** 詞語階段用來遮住國字的 emoji */
+  hiddenEmoji: string;
 }
 
-export function CharacterCard({ character, stage }: Props) {
+export function CharacterCard({ character, stage, hiddenEmoji }: Props) {
+  const isWordStage = stage === 'word';
+
   return (
     <div className={styles.card}>
-      <span className={styles.hint}>{stage === 'radical' ? '這個字的部首是？' : '哪個詞裡有這個字？'}</span>
+      <span className={styles.hint}>
+        {isWordStage ? '剛才那個字，在哪個詞裡？' : '這個字的部首是？'}
+      </span>
       <motion.span
-        key={character}
-        className={styles.character}
+        // 換題或換階段都重播一次淡入
+        key={isWordStage ? `emoji-${character}` : character}
+        className={isWordStage ? styles.emoji : styles.character}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
-        lang="zh-Hant"
+        lang={isWordStage ? undefined : 'zh-Hant'}
+        // 詞語階段要靠自己記住是哪個字，所以不把答案透露給輔助技術
+        aria-label={isWordStage ? '剛才那個國字被藏起來了' : `國字 ${character}`}
+        role="img"
       >
-        {character}
+        {isWordStage ? hiddenEmoji : character}
       </motion.span>
     </div>
   );

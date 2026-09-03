@@ -1,7 +1,6 @@
 import { ActionButton } from '../components/ActionButton';
-import type { Difficulty } from '../types/question';
 import type { Settings } from '../types/game';
-import { DURATION_OPTIONS } from '../utils/storage';
+import { DIFFICULTY_OPTIONS, TARGET_OPTIONS } from '../utils/storage';
 import styles from './SettingsScreen.module.css';
 
 interface Props {
@@ -9,12 +8,6 @@ interface Props {
   onChange: (patch: Partial<Settings>) => void;
   onBack: () => void;
 }
-
-const DIFFICULTY_OPTIONS: Array<{ value: Difficulty; label: string }> = [
-  { value: 1, label: '簡單' },
-  { value: 2, label: '普通' },
-  { value: 3, label: '挑戰' },
-];
 
 export function SettingsScreen({ settings, onChange, onBack }: Props) {
   return (
@@ -42,19 +35,19 @@ export function SettingsScreen({ settings, onChange, onBack }: Props) {
         </div>
 
         <div className={styles.row}>
-          <span className={styles.label} id="setting-duration">
-            遊戲時間
+          <span className={styles.label} id="setting-target">
+            先答對幾個字獲勝
           </span>
-          <div className={styles.options} role="group" aria-labelledby="setting-duration">
-            {DURATION_OPTIONS.map((value) => (
+          <div className={styles.options} role="group" aria-labelledby="setting-target">
+            {TARGET_OPTIONS.map((value) => (
               <button
                 key={value}
                 type="button"
-                className={`${styles.option} ${settings.duration === value ? styles.selected : ''}`}
-                aria-pressed={settings.duration === value}
-                onClick={() => onChange({ duration: value })}
+                className={`${styles.option} ${settings.targetScore === value ? styles.selected : ''}`}
+                aria-pressed={settings.targetScore === value}
+                onClick={() => onChange({ targetScore: value })}
               >
-                {value} 秒
+                {value} 個
               </button>
             ))}
           </div>
@@ -69,28 +62,22 @@ export function SettingsScreen({ settings, onChange, onBack }: Props) {
               <button
                 key={option.value}
                 type="button"
-                className={`${styles.option} ${settings.maxDifficulty === option.value ? styles.selected : ''}`}
-                aria-pressed={settings.maxDifficulty === option.value}
-                onClick={() => onChange({ maxDifficulty: option.value })}
+                className={`${styles.option} ${settings.difficulty === option.value ? styles.selected : ''}`}
+                aria-pressed={settings.difficulty === option.value}
+                onClick={() => onChange({ difficulty: option.value })}
               >
                 {option.label}
               </button>
             ))}
           </div>
         </div>
-
-        <div className={styles.row}>
-          <span className={styles.label}>最高分紀錄</span>
-          <div className={styles.options}>
-            <span className={styles.label}>{settings.bestScore} 分</span>
-            <button type="button" className={styles.option} onClick={() => onChange({ bestScore: 0 })}>
-              清除
-            </button>
-          </div>
-        </div>
       </div>
 
-      <p className={styles.note}>難度「簡單」只出錯誤選項差異明顯的題目；「挑戰」會加入形近字、同音字。</p>
+      <p className={styles.note}>
+        簡單：字本身就是部首的題目（手、日、火⋯）。普通：形近字、同音字。挑戰：再加入部首不明顯的字（教、影、島⋯）。
+        <br />
+        選詞語時國字會被 emoji 遮住，要自己記住剛才那個字。
+      </p>
 
       <ActionButton onClick={onBack} variant="secondary">
         回首頁

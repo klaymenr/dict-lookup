@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import questionData from '../data/questions.json';
-import type { Difficulty, Question } from '../types/question';
+import type { Question } from '../types/question';
 import type { Feedback, GameState, MascotId, PlayerId, PlayerState, Settings } from '../types/game';
+import { DIFFICULTY_LEVELS } from '../types/game';
 import { pickOne, shuffle } from '../utils/shuffle';
+import { HIDDEN_CHARACTER_EMOJI } from '../utils/emoji';
 import { playSound } from '../utils/audio';
-import { useCountdown } from './useCountdown';
 
 const ALL_QUESTIONS = questionData as Question[];
 
@@ -32,6 +33,7 @@ function createPlayer(id: PlayerId, name: string, question: Question): PlayerSta
     score: 0,
     question,
     stage: 'radical',
+    wordEmoji: HIDDEN_CHARACTER_EMOJI[0],
     feedback: NO_FEEDBACK,
     wrongChoices: [],
     correctChoice: null,
@@ -42,33 +44,33 @@ function createPlayer(id: PlayerId, name: string, question: Question): PlayerSta
 export interface UseGameApi extends GameState {
   /** 3 / 2 / 1 / 0（0 表示「開始！」），null 表示沒有在倒數 */
   countdownValue: number | null;
-  /** 時鐘外圈剩餘比例 0~1 */
-  timerProgress: number;
+  /** 領先者距離獲勝還差幾個字：中央「還剩下幾個字」用的 */
+  remainingToWin: number;
   start: () => void;
   backToIdle: () => void;
   selectAnswer: (playerId: PlayerId, answer: string) => void;
 }
 
-export function useGame(settings: Settings, onFinish: (p1: number, p2: number) => void): UseGameApi {
-  const pool = useMemo(
-    () => ALL_QUESTIONS.filter((q) => q.difficulty <= (settings.maxDifficulty as Difficulty)),
-    [settings.maxDifficulty],
-  );
+export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) => void): UseGameApi {
+  const pool = useMemo(() => {
+    const levels = DIFFICULTY_LEVELS[settings.difficulty];
+    return ALL_QUESTIONS.filter((q) => levels.includes(q.difficulty));
+  }, [settings.difficulty]);
 
   const deckRef = useRef<Question[]>([]);
   const cursorRef = useRef(0);
 
   const buildDeck = useCallback((): Question[] => {
-    // 依難度由易到難排列，同難度內洗牌：
+    // 同一層內洗牌，跨層由易到難：
     // 兩位玩家拿到的是相鄰的題目，難度自然相近。
-    const groups: Question[][] = [1, 2, 3].map((level) => shuffle(pool.filter((q) => q.difficulty === level)));
-    return groups.flat();
-  }, [pool]);
+    const levels = DIFFICULTY_LEVELS[settings.difficulty];
+    return levels.flatMap((level) => shuffle(pool.filter((q) => q.difficulty === level)));
+  }, [pool, settings.difficulty]);
 
   const dealNext = useCallback(
     (excludeId?: string): Question => {
       if (cursorRef.current >= deckRef.current.length) {
-        // 22. 一局內不重複同一個國字；題目用完才重新洗牌
+        // 一局內不重複同一個國字；題目用完才重新洗牌
         deckRef.current = buildDeck();
         cursorRef.current = 0;
       }
@@ -93,11 +95,12 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
     const q2 = dealNext(q1.id);
     return {
       status: 'idle',
-      timeRemaining: settings.duration,
+      targetScore: settings.targetScore,
+      winner: null,
       player1: createPlayer('player1', '玩家 A', q1),
       player2: createPlayer('player2', '玩家 B', q2),
     };
-  }, [buildDeck, dealNext, settings.duration]);
+  }, [buildDeck, dealNext, settings.targetScore]);
 
   const [state, setState] = useState<GameState>(createInitialState);
   const [countdownValue, setCountdownValue] = useState<number | null>(null);
@@ -119,9 +122,6 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
     [commit],
   );
 
-  const timeUpRef = useRef<() => void>(() => {});
-  const timer = useCountdown(() => timeUpRef.current());
-
   const timeoutsRef = useRef<number[]>([]);
   const finishRef = useRef(onFinish);
   finishRef.current = onFinish;
@@ -140,38 +140,40 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
     timeoutsRef.current = [];
   }, []);
 
-  const finishGame = useCallback(() => {
-    const current = gameRef.current;
-    if (current.status === 'finished') return;
-    clearPendingTimeouts();
-    timer.stop();
-    playSound('game-end');
-    commit({
-      ...current,
-      status: 'finished',
-      timeRemaining: 0,
-      player1: { ...current.player1, feedback: NO_FEEDBACK, locked: true },
-      player2: { ...current.player2, feedback: NO_FEEDBACK, locked: true },
-    });
-    finishRef.current(current.player1.score, current.player2.score);
-  }, [clearPendingTimeouts, commit, timer]);
-  timeUpRef.current = finishGame;
+  /** 有人達到目標字數就結束整局 */
+  const finishGame = useCallback(
+    (winner: PlayerId) => {
+      const current = gameRef.current;
+      if (current.status === 'finished') return;
+      clearPendingTimeouts();
+      playSound('game-end');
+      commit({
+        ...current,
+        status: 'finished',
+        winner,
+        player1: { ...current.player1, feedback: NO_FEEDBACK, locked: true },
+        player2: { ...current.player2, feedback: NO_FEEDBACK, locked: true },
+      });
+      finishRef.current(winner);
+    },
+    [clearPendingTimeouts, commit],
+  );
 
   const start = useCallback(() => {
     clearPendingTimeouts();
-    timer.reset(settings.duration);
     deckRef.current = buildDeck();
     cursorRef.current = 0;
     const q1 = dealNext();
     const q2 = dealNext(q1.id);
     commit({
       status: 'countdown',
-      timeRemaining: settings.duration,
+      targetScore: settings.targetScore,
+      winner: null,
       player1: createPlayer('player1', '玩家 A', q1),
       player2: createPlayer('player2', '玩家 B', q2),
     });
 
-    // 16. 3 → 2 → 1 → 開始！ 之後才啟動計時
+    // 3 → 2 → 1 → 開始！ 之後才開放作答
     setCountdownValue(3);
     playSound('countdown');
     [2, 1].forEach((value, index) => {
@@ -187,20 +189,18 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
     later(() => {
       setCountdownValue(null);
       commit({ ...gameRef.current, status: 'playing' });
-      timer.start(settings.duration);
     }, COUNTDOWN_STEP_MS * 3 + 700);
-  }, [buildDeck, clearPendingTimeouts, commit, dealNext, later, settings.duration, timer]);
+  }, [buildDeck, clearPendingTimeouts, commit, dealNext, later, settings.targetScore]);
 
   const backToIdle = useCallback(() => {
     clearPendingTimeouts();
-    timer.reset(settings.duration);
     setCountdownValue(null);
-    commit({ ...gameRef.current, status: 'idle', timeRemaining: settings.duration });
-  }, [clearPendingTimeouts, commit, settings.duration, timer]);
+    commit({ ...gameRef.current, status: 'idle', targetScore: settings.targetScore, winner: null });
+  }, [clearPendingTimeouts, commit, settings.targetScore]);
 
   /**
-   * 28 / 29. 兩位玩家的題目、階段、回饋完全獨立，
-   * 只有中央倒數是共用的；一邊答錯不會擋住另一邊。
+   * 兩位玩家的題目、階段、回饋完全獨立，
+   * 只有中央的「還剩下幾個字」是共用的；一邊答錯不會擋住另一邊。
    */
   const selectAnswer = useCallback(
     (playerId: PlayerId, answer: string) => {
@@ -221,7 +221,7 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
       const token = feedbackTokenRef.current;
 
       if (!isCorrect) {
-        // 11. 答錯不換題，玩家可以繼續選其他答案
+        // 答錯不換題，玩家可以繼續選其他答案
         playSound('answer-wrong');
         commitPlayer(playerId, {
           ...player,
@@ -245,7 +245,8 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
       playSound('answer-correct');
 
       if (isRadicalStage) {
-        // 13. 部首答對本身不計分，只切換到詞語階段
+        // 部首答對本身不算完成，只切換到詞語階段（國字改用 emoji 遮起來）
+        const emoji = pickOne(HIDDEN_CHARACTER_EMOJI);
         commitPlayer(playerId, {
           ...player,
           correctChoice: answer,
@@ -262,6 +263,7 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
           commitPlayer(playerId, {
             ...latest,
             stage: 'word',
+            wordEmoji: emoji,
             wrongChoices: [],
             correctChoice: null,
             locked: false,
@@ -271,10 +273,11 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
         return;
       }
 
-      // 詞語也答對：部首 + 詞語都對，才得 1 分
+      // 詞語也答對：部首 + 詞語都對，才算完成 1 個字
+      const nextScore = player.score + 1;
       commitPlayer(playerId, {
         ...player,
-        score: player.score + 1,
+        score: nextScore,
         correctChoice: answer,
         locked: true,
         feedback: {
@@ -284,6 +287,13 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
           token,
         },
       });
+
+      if (nextScore >= gameRef.current.targetScore) {
+        // 先答對目標字數的人獲勝，讓答對動畫播完再結束
+        later(() => finishGame(playerId), CORRECT_WORD_MS);
+        return;
+      }
+
       later(() => {
         const latest = gameRef.current[playerId];
         const other = gameRef.current[playerId === 'player1' ? 'player2' : 'player1'];
@@ -298,32 +308,24 @@ export function useGame(settings: Settings, onFinish: (p1: number, p2: number) =
         });
       }, CORRECT_WORD_MS);
     },
-    [commitPlayer, dealNext, later],
+    [commitPlayer, dealNext, finishGame, later],
   );
-
-  // 14.2 最後 3 秒的 tick 音
-  useEffect(() => {
-    if (state.status !== 'playing') return;
-    if (timer.secondsRemaining <= 3 && timer.secondsRemaining > 0) playSound('countdown');
-  }, [state.status, timer.secondsRemaining]);
 
   // 離開畫面時清掉所有等待中的計時器
   useEffect(() => clearPendingTimeouts, [clearPendingTimeouts]);
 
-  // 在設定頁調整局時長後，待機狀態的顯示要跟著更新
-  useEffect(() => {
-    if (gameRef.current.status === 'idle') {
-      timer.reset(settings.duration);
-      commit({ ...gameRef.current, timeRemaining: settings.duration });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.duration]);
+  // 待機時就跟著設定走，這樣在設定頁改完目標字數，首頁與中央顯示會立刻更新
+  const targetScore = state.status === 'idle' ? settings.targetScore : state.targetScore;
+  const remainingToWin = Math.max(
+    0,
+    Math.min(targetScore - state.player1.score, targetScore - state.player2.score),
+  );
 
   return {
     ...state,
-    timeRemaining: state.status === 'playing' ? timer.secondsRemaining : state.timeRemaining,
+    targetScore,
     countdownValue,
-    timerProgress: state.status === 'playing' ? timer.progress : state.status === 'finished' ? 0 : 1,
+    remainingToWin,
     start,
     backToIdle,
     selectAnswer,

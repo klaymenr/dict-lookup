@@ -9,15 +9,17 @@ import styles from './PlayerPanel.module.css';
 
 interface Props {
   player: PlayerState;
+  /** 這一局要先答對幾個字 */
+  target: number;
   /** 遊戲進行中才能作答（倒數、結束時為 false） */
   active: boolean;
   onSelect: (choice: string) => void;
 }
 
-export function PlayerPanel({ player, active, onSelect }: Props) {
+export function PlayerPanel({ player, target, active, onSelect }: Props) {
   const { question, stage } = player;
 
-  // 8. 三個選項位置隨機；同一題同一階段內順序保持不變
+  // 三個選項位置隨機；同一題同一階段內順序保持不變
   const choices = useMemo(
     () => shuffle(stage === 'radical' ? question.radicalChoices : question.wordChoices),
     [question.id, stage], // eslint-disable-line react-hooks/exhaustive-deps
@@ -30,8 +32,8 @@ export function PlayerPanel({ player, active, onSelect }: Props) {
       }`}
       aria-label={`${player.name} 的作答區`}
     >
-      <ScoreDisplay name={player.name} score={player.score} />
-      <CharacterCard character={question.character} stage={stage} />
+      <ScoreDisplay name={player.name} score={player.score} target={target} />
+      <CharacterCard character={question.character} stage={stage} hiddenEmoji={player.wordEmoji} />
       <ChoicePanel
         transitionKey={`${question.id}-${stage}`}
         stage={stage}

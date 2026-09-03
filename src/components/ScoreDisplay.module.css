@@ -27,6 +27,13 @@
   line-height: 1;
 }
 
+.target {
+  font-size: clamp(1.25rem, 2.6vh, 1.75rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-soft);
+}
+
 .unit {
   font-size: var(--font-ui-small);
   color: var(--color-ink-soft);

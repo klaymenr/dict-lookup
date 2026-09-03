@@ -36,9 +36,10 @@
   color: var(--color-timer);
 }
 
-.timeUp {
-  font-size: clamp(3rem, 12vh, 7rem);
+.finished {
+  font-size: clamp(2.5rem, 11vh, 6rem);
   font-weight: 800;
-  color: var(--color-wrong);
-  letter-spacing: 0.1em;
+  color: var(--color-correct);
+  letter-spacing: 0.08em;
+  text-align: center;
 }

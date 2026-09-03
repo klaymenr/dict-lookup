@@ -1,14 +1,20 @@
-import type { Settings } from '../types/game';
+import type { DifficultyLevel, Settings } from '../types/game';
 
 const STORAGE_KEY = 'dictionary-game-settings';
 
-export const DURATION_OPTIONS = [30, 60, 90, 120] as const;
+/** 結束條件：先答對幾個字就獲勝 */
+export const TARGET_OPTIONS = [5, 10, 15, 20] as const;
+
+export const DIFFICULTY_OPTIONS: Array<{ value: DifficultyLevel; label: string }> = [
+  { value: 'easy', label: '簡單' },
+  { value: 'normal', label: '普通' },
+  { value: 'hard', label: '挑戰' },
+];
 
 export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
-  duration: 60,
-  maxDifficulty: 2,
-  bestScore: 0,
+  targetScore: 10,
+  difficulty: 'normal',
 };
 
 /** 只存遊戲設定，不存任何個人資料 */
@@ -20,14 +26,13 @@ export function loadSettings(): Settings {
     return {
       soundEnabled:
         typeof parsed.soundEnabled === 'boolean' ? parsed.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
-      duration: DURATION_OPTIONS.includes(parsed.duration as never)
-        ? (parsed.duration as number)
-        : DEFAULT_SETTINGS.duration,
-      maxDifficulty:
-        parsed.maxDifficulty === 1 || parsed.maxDifficulty === 2 || parsed.maxDifficulty === 3
-          ? parsed.maxDifficulty
-          : DEFAULT_SETTINGS.maxDifficulty,
-      bestScore: typeof parsed.bestScore === 'number' && parsed.bestScore >= 0 ? parsed.bestScore : 0,
+      targetScore: TARGET_OPTIONS.includes(parsed.targetScore as never)
+        ? (parsed.targetScore as number)
+        : DEFAULT_SETTINGS.targetScore,
+      difficulty:
+        parsed.difficulty === 'easy' || parsed.difficulty === 'normal' || parsed.difficulty === 'hard'
+          ? parsed.difficulty
+          : DEFAULT_SETTINGS.difficulty,
     };
   } catch {
     return DEFAULT_SETTINGS;

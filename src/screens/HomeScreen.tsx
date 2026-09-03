@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ActionButton } from '../components/ActionButton';
 import type { Settings } from '../types/game';
+import { DIFFICULTY_OPTIONS } from '../utils/storage';
 import styles from './HomeScreen.module.css';
 
 interface Props {
@@ -9,9 +10,9 @@ interface Props {
   onOpenSettings: () => void;
 }
 
-const DIFFICULTY_LABEL = ['', '簡單', '普通', '挑戰'];
-
 export function HomeScreen({ settings, onStart, onOpenSettings }: Props) {
+  const difficultyLabel = DIFFICULTY_OPTIONS.find((o) => o.value === settings.difficulty)?.label ?? '';
+
   return (
     <div className={styles.screen}>
       <h1 className={styles.title}>查字典大挑戰</h1>
@@ -39,10 +40,9 @@ export function HomeScreen({ settings, onStart, onOpenSettings }: Props) {
       </div>
 
       <div className={styles.meta}>
-        <span>時間 {settings.duration} 秒</span>
-        <span>難度 {DIFFICULTY_LABEL[settings.maxDifficulty]}</span>
+        <span>先答對 {settings.targetScore} 個字就獲勝</span>
+        <span>難度 {difficultyLabel}</span>
         <span>音效 {settings.soundEnabled ? '開' : '關'}</span>
-        <span>最高分 {settings.bestScore}</span>
       </div>
     </div>
   );
