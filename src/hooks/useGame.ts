@@ -13,8 +13,12 @@ const ALL_QUESTIONS = questionData as Question[];
 const CORRECT_RADICAL_MS = 420;
 /** 答對詞語後停留多久再換下一題 */
 const CORRECT_WORD_MS = 520;
-/** 答錯提示顯示多久 */
-const WRONG_FEEDBACK_MS = 1000;
+/**
+ * 答錯後鎖住這一位玩家多久：防止玩家用連點把答案試出來。
+ * 同一個常數也是提示泡泡顯示的時間 —— 泡泡在畫面上就是「還要等多久」的計時器，
+ * 要調整請兩邊一起改，不要拆成兩個數字。
+ */
+const WRONG_PENALTY_MS = 1000;
 /** 開場 3、2、1 每個數字停留多久 */
 const COUNTDOWN_STEP_MS = 800;
 
@@ -221,11 +225,13 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
       const token = feedbackTokenRef.current;
 
       if (!isCorrect) {
-        // 答錯不換題，玩家可以繼續選其他答案
+        // 答錯不換題，但先鎖住這一位玩家 WRONG_PENALTY_MS，
+        // 讓「不知道就一直亂按」變成有成本的事（另一位玩家不受影響）。
         playSound('answer-wrong');
         commitPlayer(playerId, {
           ...player,
           wrongChoices: [...player.wrongChoices, answer],
+          locked: true,
           feedback: {
             kind: 'wrong',
             mascot: pickOne(MASCOTS),
@@ -235,10 +241,13 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
         });
         later(() => {
           const latest = gameRef.current[playerId];
-          if (latest.feedback.token === token) {
-            commitPlayer(playerId, { ...latest, feedback: NO_FEEDBACK });
-          }
-        }, WRONG_FEEDBACK_MS);
+          // 解鎖不綁 token：萬一 token 被別的流程換掉，這一邊會永遠解不開。
+          commitPlayer(playerId, {
+            ...latest,
+            locked: false,
+            feedback: latest.feedback.token === token ? NO_FEEDBACK : latest.feedback,
+          });
+        }, WRONG_PENALTY_MS);
         return;
       }
 

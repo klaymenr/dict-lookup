@@ -41,6 +41,8 @@ export function PlayerPanel({ player, target, active, onSelect }: Props) {
         wrongChoices={player.wrongChoices}
         correctChoice={player.correctChoice}
         disabled={!active || player.locked}
+        // locked 有兩種原因：答對動畫、答錯處罰。只有後者要把選項變淡。
+        frozen={player.locked && player.feedback.kind === 'wrong'}
         onSelect={onSelect}
       />
       <FeedbackMascot feedback={player.feedback} />

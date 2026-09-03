@@ -11,6 +11,8 @@ interface Props {
   wrongChoices: string[];
   correctChoice: string | null;
   disabled: boolean;
+  /** 答錯處罰中：整排選項變淡，讓玩家知道「現在按沒用，等一下」 */
+  frozen: boolean;
   onSelect: (choice: string) => void;
 }
 
@@ -27,6 +29,7 @@ export function ChoicePanel({
   wrongChoices,
   correctChoice,
   disabled,
+  frozen,
   onSelect,
 }: Props) {
   // 18. Multi-touch：用 pointerdown 直接反應，兩邊各自獨立，不會互相阻塞
@@ -47,7 +50,8 @@ export function ChoicePanel({
           key={transitionKey}
           className={styles.row}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: 0.2 } }}
+          // 答錯處罰中整排變淡：不用 grayscale，錯的紅框與 ✕ 要留著
+          animate={{ opacity: frozen ? 0.45 : 1, transition: { duration: 0.2 } }}
           exit={{ opacity: 0, transition: { duration: 0.15 } }}
         >
           {choices.map((choice) => {

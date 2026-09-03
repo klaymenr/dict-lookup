@@ -38,7 +38,10 @@ export interface PlayerState {
   wrongChoices: string[];
   /** 剛選對、正在播放答對動畫的選項 */
   correctChoice: string | null;
-  /** 答對後短暫鎖住這一位玩家的輸入（不影響另一位） */
+  /**
+   * 短暫鎖住這一位玩家的輸入（不影響另一位）。
+   * 兩種情況：答對後播放動畫時，以及答錯後的 1 秒處罰。
+   */
   locked: boolean;
 }
 
