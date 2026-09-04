@@ -5,11 +5,13 @@ const STORAGE_KEY = 'dictionary-game-settings';
 /** 結束條件：先答對幾個字就獲勝 */
 export const TARGET_OPTIONS = [5, 10, 15, 20] as const;
 
-export const DIFFICULTY_OPTIONS: Array<{ value: DifficultyLevel; label: string }> = [
-  { value: 'easy', label: '簡單' },
-  { value: 'normal', label: '普通' },
-  { value: 'hard', label: '挑戰' },
+export const DIFFICULTY_OPTIONS: Array<{ value: DifficultyLevel; label: string; hint: string }> = [
+  { value: 'normal', label: '普通', hint: '1-2 年級生字' },
+  { value: 'hard', label: '挑戰', hint: '1-4 年級生字' },
+  { value: 'hell', label: '地獄', hint: '1-6 年級生字' },
 ];
+
+const DIFFICULTY_VALUES = DIFFICULTY_OPTIONS.map((option) => option.value);
 
 export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
@@ -29,10 +31,10 @@ export function loadSettings(): Settings {
       targetScore: TARGET_OPTIONS.includes(parsed.targetScore as never)
         ? (parsed.targetScore as number)
         : DEFAULT_SETTINGS.targetScore,
-      difficulty:
-        parsed.difficulty === 'easy' || parsed.difficulty === 'normal' || parsed.difficulty === 'hard'
-          ? parsed.difficulty
-          : DEFAULT_SETTINGS.difficulty,
+      // 舊版的「簡單」已經沒有了（難度改成用生字表年級分），存到舊值就回到預設
+      difficulty: DIFFICULTY_VALUES.includes(parsed.difficulty as DifficultyLevel)
+        ? (parsed.difficulty as DifficultyLevel)
+        : DEFAULT_SETTINGS.difficulty,
     };
   } catch {
     return DEFAULT_SETTINGS;

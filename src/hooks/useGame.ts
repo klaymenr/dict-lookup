@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import questionData from '../data/questions.json';
 import type { Question } from '../types/question';
 import type { Feedback, GameState, MascotId, PlayerId, PlayerState, Settings } from '../types/game';
-import { DIFFICULTY_LEVELS } from '../types/game';
-import { pickOne, shuffle } from '../utils/shuffle';
+import { buildDeck as buildDeckFor } from '../utils/deck';
+import { pickOne } from '../utils/shuffle';
 import { HIDDEN_CHARACTER_EMOJI } from '../utils/emoji';
 import { playSound } from '../utils/audio';
 
@@ -56,20 +56,13 @@ export interface UseGameApi extends GameState {
 }
 
 export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) => void): UseGameApi {
-  const pool = useMemo(() => {
-    const levels = DIFFICULTY_LEVELS[settings.difficulty];
-    return ALL_QUESTIONS.filter((q) => levels.includes(q.difficulty));
-  }, [settings.difficulty]);
-
   const deckRef = useRef<Question[]>([]);
   const cursorRef = useRef(0);
 
-  const buildDeck = useCallback((): Question[] => {
-    // 同一層內洗牌，跨層由易到難：
-    // 兩位玩家拿到的是相鄰的題目，難度自然相近。
-    const levels = DIFFICULTY_LEVELS[settings.difficulty];
-    return levels.flatMap((level) => shuffle(pool.filter((q) => q.difficulty === level)));
-  }, [pool, settings.difficulty]);
+  const buildDeck = useCallback(
+    () => buildDeckFor(ALL_QUESTIONS, settings.difficulty, settings.targetScore),
+    [settings.difficulty, settings.targetScore],
+  );
 
   const dealNext = useCallback(
     (excludeId?: string): Question => {

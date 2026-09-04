@@ -33,7 +33,12 @@ export function PlayerPanel({ player, target, active, onSelect }: Props) {
       aria-label={`${player.name} 的作答區`}
     >
       <ScoreDisplay name={player.name} score={player.score} target={target} />
-      <CharacterCard character={question.character} stage={stage} hiddenEmoji={player.wordEmoji} />
+      <CharacterCard
+        character={question.character}
+        stage={stage}
+        hiddenEmoji={player.wordEmoji}
+        grade={question.grade}
+      />
       <ChoicePanel
         transitionKey={`${question.id}-${stage}`}
         stage={stage}

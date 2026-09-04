@@ -67,6 +67,7 @@ export function SettingsScreen({ settings, onChange, onBack }: Props) {
                 onClick={() => onChange({ difficulty: option.value })}
               >
                 {option.label}
+                <span className={styles.optionHint}>{option.hint}</span>
               </button>
             ))}
           </div>
@@ -74,9 +75,10 @@ export function SettingsScreen({ settings, onChange, onBack }: Props) {
       </div>
 
       <p className={styles.note}>
-        簡單：字本身就是部首的題目（手、日、火⋯）。普通：形近字、同音字。挑戰：再加入部首不明顯的字（教、影、島⋯）。
+        題目全部來自教育部各版本國小生字表，卡片上會標這個字是幾年級教的。
+        三個難度都會出到低年級的字，差別在重心：地獄有七成以上是 5、6 年級才教的字。
         <br />
-        選詞語時國字會被 emoji 遮住，要自己記住剛才那個字。
+        選詞語時國字會被 emoji 遮住，要自己記住剛才那個字；答錯要等 1 秒才能再按。
       </p>
 
       <ActionButton onClick={onBack} variant="secondary">

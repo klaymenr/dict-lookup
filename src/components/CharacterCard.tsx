@@ -7,15 +7,21 @@ interface Props {
   stage: QuestionStage;
   /** 詞語階段用來遮住國字的 emoji */
   hiddenEmoji: string;
+  /** 這個字在生字表裡是幾年級教的 */
+  grade: number;
 }
 
-export function CharacterCard({ character, stage, hiddenEmoji }: Props) {
+export function CharacterCard({ character, stage, hiddenEmoji, grade }: Props) {
   const isWordStage = stage === 'word';
 
   return (
     <div className={styles.card}>
       <span className={styles.hint}>
         {isWordStage ? '剛才那個字，在哪個詞裡？' : '這個字的部首是？'}
+      </span>
+      {/* 藏字階段一樣佔著位子（visibility），不然整張卡片會上下跳 */}
+      <span className={styles.grade} aria-hidden={isWordStage} data-hidden={isWordStage}>
+        {grade} 年級的字
       </span>
       <motion.span
         // 換題或換階段都重播一次淡入

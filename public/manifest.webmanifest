@@ -1,7 +1,7 @@
 {
   "name": "查字典大挑戰",
   "short_name": "查字典",
-  "description": "適合國小二年級的雙人查字典競賽遊戲：先找部首，再找詞語。",
+  "description": "國小 1-6 年級的雙人查字典競賽遊戲：先找部首，再找詞語。",
   "lang": "zh-Hant",
   "start_url": "./index.html",
   "scope": "./",

@@ -55,6 +55,15 @@
   font-weight: 700;
 }
 
+/* 難度按鈕的第二行：直接寫出這個難度用哪幾個年級的生字 */
+.optionHint {
+  display: block;
+  margin-top: 0.15em;
+  font-size: 0.75em;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+}
+
 .selected {
   border-color: var(--color-timer);
   background: rgba(229, 165, 66, 0.22);

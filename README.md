@@ -1,6 +1,6 @@
 # 查字典大挑戰 Dictionary Race
 
-適合國小二年級的**雙人查字典競賽遊戲**。兩個人共用一台 iPad（橫向），
+國小 1-6 年級的**雙人查字典競賽遊戲**（難度可調）。兩個人共用一台 iPad（橫向），
 左右各占半邊畫面，同時作答，比誰先答對 N 個字。
 
 訓練重點：
@@ -9,6 +9,7 @@
 2. 從候選詞中找出包含指定國字的正確詞語
 3. 熟悉「先找部首，再確認字詞」的查字典流程
 
+題目來自教育部各版本國小 1-6 年級生字表，卡片上會標這個字是幾年級教的。
 純前端、無帳號、無後端、無網路連線需求；加入主畫面後可離線遊玩。
 
 ## 快速開始
@@ -23,8 +24,9 @@ npm run preview   # 預覽 build 結果
 其他指令：
 
 ```bash
-npm run typecheck        # TypeScript 型別檢查
+npm run typecheck         # TypeScript 型別檢查
 npm run check:questions   # 題庫品質檢查（部首、詞語、重複字…）
+npm run check:deck        # 發牌檢查（各難度的年級比例、有沒有重複；需要 Node 22+）
 npm run icons             # 重新產生 PWA icon
 ```
 
@@ -65,16 +67,22 @@ LocalStorage，PWA（自寫 Service Worker）。沒有使用 Canvas 遊戲引擎
 
 ### 難度分層
 
-一局之內只出同一層的題目，所以兩位玩家拿到的難度必定相同：
+難度用**生字表的年級**分。三個難度都從 1 年級開始收，差別在重心壓在哪一段
+（下表是抽牌的機率權重，不是題數）：
 
-| 設定 | 題庫層級 | 內容 | 題數 |
-| --- | --- | --- | --- |
-| 簡單 | Level 1 | 含「字本身就是部首」的送分題（手、日、火⋯） | 29 |
-| 普通（預設） | Level 2 | 形近字、同音字（湖泊／胡同／糊塗） | 63 |
-| 挑戰 | Level 3 | 部首不明顯的字（教、影、島、鄉、醫⋯） | 43 |
+| 設定 | 年級範圍 | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 普通（預設） | 1-2 年級 | 50% | 50% | | | | |
+| 挑戰 | 1-4 年級 | 15% | 25% | 30% | 30% | | |
+| 地獄 | 1-6 年級 | 5% | 5% | 10% | 15% | 30% | 35% |
 
-> 「簡單」只有 29 題，兩人打到 20 個字的一局會用完題庫並重新洗牌，
-> 這時同一個國字有機會再出現一次。普通與挑戰都夠一局用。
+一局開始時依權重抽一副牌（抽走不放回，所以一局內不會重複同一個字），
+再照年級由易到難發出去；兩位玩家拿到的是相鄰的題目，難度自然相近。
+牌數只比一局會用到的多幾張，免得地獄的 5、6 年級全排在牌尾、整局都沒發到。
+
+`npm run check:deck` 會直接載入 app 在用的 `src/utils/deck.ts`（Node 22+ 可以直接跑 .ts），
+對 4 種目標字數各抽 200 副牌，檢查比例、有沒有重複的字，
+以及「牌一定夠一局用」——牌不會在中途發完，才不會重洗牌又出到同一個字。
 
 ### 音效
 
@@ -94,16 +102,17 @@ Service Worker 會 precache 程式碼、題庫與 icon，加入主畫面後可�
 
 ## 題庫
 
-`src/data/questions.json`，135 題（Level 1：29、Level 2：63、Level 3：43，共 59 種部首）。
+`src/data/questions.json`，1200 題（每個年級 200 題，共 162 種部首），
+由 `scripts/build_questions.py` 從教育部生字表產生，不是手寫的。
+卡片上會標這個字是幾年級教的。
 
 ```json
 {
-  "id": "q001",
+  "id": "q0001",
   "character": "湖",
-  "grade": 2,
-  "difficulty": 2,
+  "grade": 3,
   "radical": "氵",
-  "radicalChoices": ["氵", "木", "口"],
+  "radicalChoices": ["氵", "胡", "月"],
   "correctWord": "湖泊",
   "wordChoices": ["湖泊", "胡同", "糊塗"]
 }
@@ -111,19 +120,39 @@ Service Worker 會 precache 程式碼、題庫與 icon，加入主畫面後可�
 
 規則：
 
-- `wordChoices` 中**只有** `correctWord` 包含 `character`。
-- 錯誤選項盡量有迷惑性（同音字、形近字、常見混淆字），但不超出小二程度。
-- 難度：Level 1 送分題（字本身就是部首）；Level 2 形近／音近；Level 3 部首不明顯。
-  設定頁的「簡單／普通／挑戰」各自對應一層，不累加。
-- 「字本身就是部首」的題目（手、日、火⋯）等於直接找出一樣的字，
-  檢查腳本會強制它們標成 Level 1，不會混進普通與挑戰。
+- `wordChoices` 中**只有** `correctWord` 包含 `character`，三個詞長度一樣
+  （長度不同的話光看形狀就知道答案）。
+- 錯誤詞語取**同音旁字**的詞（湖 → 胡同、糊塗），也就是形近字與同音字。
+- 錯誤部首取**這個字裡其他真的看得見的部件**，所以三個選項都在字裡面，
+  考的是「哪一個才是部首」，不是「哪一個看起來像部首」。
+- 部首取這個字裡看得見的寫法（湖 → 氵）；部首在字裡看不出來的字
+  （為、街、鄉⋯）直接不出題，否則正確答案會變成「唯一沒出現過的選項」。
 
-新增題目後跑 `npm run check:questions`，會檢查 id 與國字是否重複、
-部首是否在選項內、正確詞是否含該字、錯誤選項是否誤含該字、
-「字本身就是部首」是否標在 Level 1，並提醒哪一層題數不夠一局用。
+### 資料與產生方式
+
+| 檔案 | 內容 |
+| --- | --- |
+| `data/vocabulary.tsv` | 教育部各版本國小生字表（南一／康軒／翰林統整）：生字、年級、常見程度、同音旁字、教育部辭典雙字詞 |
+| `data/glyphs.tsv` | 每個字「看得見的部首寫法」與其他部件，由 Unihan `kRSUnicode` + CHISE/cjkvi IDS 拆字表推出 |
+| `data/curated-radicals.tsv` | 舊版 135 題手工題庫的部首答案，當回歸測試的基準 |
+
+```bash
+python3 scripts/build_questions.py   # 產生 src/data/questions.json（只有標準函式庫）
+npm run check:questions              # 題庫品質檢查
+npm run check:deck                   # 發牌比例檢查
+```
+
+`check:questions` 會檢查 id 與國字是否重複、年級是否在 1-6、部首是否在選項內、
+正確詞是否含該字、錯誤選項是否誤含該字或長度不一致，
+並拿 `data/curated-radicals.tsv` 對照手工題庫的部首答案（目前 76 個字全部一致）。
+
+品質上的已知取捨：2994 個生字裡，96 個因為部首在字裡看不出來、
+66 個因為教育部辭典沒有合適的雙字詞、36 個因為湊不出錯誤選項而不出題；
+留下的 1200 題中有 226 個選項不是取自同音旁字或字內部件，
+而是退而求其次用同部首的詞或常見部首（`build_questions.py` 每次都會印出這個數字）。
 
 出題規則：一局內不重複同一個國字；左右玩家不會同時拿到同一題；
-題目依難度由易到難發牌，所以兩邊拿到的難度相近。
+題目依年級由易到難發牌，所以兩邊拿到的難度相近。
 
 ## 專案結構
 
@@ -133,10 +162,12 @@ src/
 │                  PlayerPanel / CountdownClock / ActionButton
 ├── screens/       HomeScreen / GameScreen / ResultScreen / SettingsScreen
 ├── hooks/         useGame（遊戲邏輯與勝負判定）
-├── data/          questions.json
+├── data/          questions.json（由 scripts/build_questions.py 產生）
 ├── types/         game.ts / question.ts
-├── utils/         audio.ts / storage.ts / shuffle.ts / emoji.ts
+├── utils/         deck.ts（依難度抽牌）/ audio.ts / storage.ts / shuffle.ts / emoji.ts
 └── styles/        global.css（色彩、字級、觸控尺寸等 token）
+data/              題庫的來源資料（生字表、字形、回歸測試基準）
+scripts/           build_questions.py / check-questions.mjs / check-deck.mjs / generate-icons.mjs
 ```
 
 `useGame` 以一個 ref 當作唯一真實狀態來源，所有副作用（音效、setTimeout）

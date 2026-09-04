@@ -3,14 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "查字典大挑戰 — 適合國小二年級的雙人查字典競賽遊戲 (iPad 橫向)",
+  "description": "查字典大挑戰 — 國小 1-6 年級的雙人查字典競賽遊戲 (iPad 橫向)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "icons": "node scripts/generate-icons.mjs",
-    "check:questions": "node scripts/check-questions.mjs"
+    "check:questions": "node scripts/check-questions.mjs",
+    "check:deck": "node scripts/check-deck.mjs"
   },
   "dependencies": {
     "framer-motion": "^11.11.17",

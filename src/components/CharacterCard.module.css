@@ -19,6 +19,19 @@
   letter-spacing: 0.12em;
 }
 
+/* 生字表年級：告訴大人這個字是幾年級教的，藏字階段留著位子但不顯示 */
+.grade {
+  font-size: var(--font-ui-small);
+  color: var(--color-ink-soft);
+  background: var(--color-bg);
+  border-radius: 999px;
+  padding: 0.15em 0.8em;
+}
+
+.grade[data-hidden='true'] {
+  visibility: hidden;
+}
+
 .character {
   font-size: var(--font-character);
   font-weight: 700;

@@ -1,4 +1,4 @@
-import type { Difficulty, Question } from './question';
+import type { Grade, Question } from './question';
 
 export type GameStatus = 'idle' | 'countdown' | 'playing' | 'finished';
 
@@ -10,8 +10,8 @@ export type PlayerId = 'player1' | 'player2';
 
 export type MascotId = 'rabbit' | 'cat';
 
-/** 難度分層：一局之內只出同一層，兩位玩家拿到的難度必定相同 */
-export type DifficultyLevel = 'easy' | 'normal' | 'hard';
+/** 難度分層：用生字表的年級範圍分，兩位玩家在同一局裡拿到的是同一份牌 */
+export type DifficultyLevel = 'normal' | 'hard' | 'hell';
 
 export interface Feedback {
   kind: FeedbackKind;
@@ -62,9 +62,13 @@ export interface Settings {
   difficulty: DifficultyLevel;
 }
 
-/** 每個難度實際會出到的題庫層級 */
-export const DIFFICULTY_LEVELS: Record<DifficultyLevel, Difficulty[]> = {
-  easy: [1], // 字本身就是部首（手、日、火⋯）
-  normal: [2], // 形近字、同音字
-  hard: [3], // 部首不明顯的字（教、影、島⋯）
+/**
+ * 每個難度各年級生字的抽牌比重（不是題數，是抽到的機率權重）。
+ * 三個難度都從 1 年級開始收，差別在重心壓在哪裡：
+ * 地獄仍然出得到低年級字，只是七成以上會是 5、6 年級才教的。
+ */
+export const GRADE_MIX: Record<DifficultyLevel, Partial<Record<Grade, number>>> = {
+  normal: { 1: 50, 2: 50 },
+  hard: { 1: 15, 2: 25, 3: 30, 4: 30 },
+  hell: { 1: 5, 2: 5, 3: 10, 4: 15, 5: 30, 6: 35 },
 };
