@@ -57,13 +57,23 @@ export function ProgressTrack({
   // 被追過的那一刻做一次反應；只看分數變化，面板因為回饋重繪時不重播
   const [overtaken, setOvertaken] = useState(false);
   const previousLead = useRef(lead);
+  const timerRef = useRef(0);
+  useEffect(() => () => window.clearTimeout(timerRef.current), []);
   useEffect(() => {
     const wasAhead = previousLead.current >= 0;
     previousLead.current = lead;
-    if (!active || !wasAhead || lead >= 0) return;
+    if (!active) {
+      // 結算時別讓驚訝表情卡在「○○ 完成！」底下
+      window.clearTimeout(timerRef.current);
+      setOvertaken(false);
+      return;
+    }
+    if (!wasAhead || lead >= 0) return;
+    // 計時器記在 ref：反應還沒結束又有人得分時，要重新計時而不是被取消掉，
+    // 否則 overtaken 會永遠停在 true。
+    window.clearTimeout(timerRef.current);
     setOvertaken(true);
-    const id = window.setTimeout(() => setOvertaken(false), OVERTAKE_MS);
-    return () => window.clearTimeout(id);
+    timerRef.current = window.setTimeout(() => setOvertaken(false), OVERTAKE_MS);
   }, [score, opponentScore, active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const warning = remaining > 0 && remaining <= WARNING_AT;
