@@ -9,14 +9,25 @@
   background: var(--color-card);
   border: 2px solid var(--color-line);
   border-radius: var(--radius);
-  padding: clamp(1.25rem, 4vh, 2.5rem) 1.5rem;
-  gap: clamp(0.5rem, 1.5vh, 1.25rem);
+  padding: clamp(0.5rem, 3cqh, 2.5rem) clamp(0.75rem, 4cqw, 1.5rem);
+  gap: clamp(0.15rem, 1.2cqh, 1.25rem);
+  /* 卡片在 1fr 的格子裡置中，內容太高時會往上下溢出蓋住跑道與選項，
+     所以夾住高度：寧可卡片自己裁掉，也不要蓋到別人 */
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .hint {
   font-size: var(--font-ui-small);
   color: var(--color-ink-soft);
   letter-spacing: 0.12em;
+}
+
+/* 面板矮到連國字都快放不下時（比現役手機還小的螢幕），先犧牲這行提示 */
+@container (max-height: 250px) {
+  .hint {
+    display: none;
+  }
 }
 
 /* 生字表年級：告訴大人這個字是幾年級教的，藏字階段留著位子但不顯示 */

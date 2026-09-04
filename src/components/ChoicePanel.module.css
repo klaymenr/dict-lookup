@@ -9,7 +9,7 @@
 .row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  gap: clamp(0.35rem, 2cqw, 1.5rem);
   width: 100%;
 }
 
@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: center;
   min-height: var(--choice-min-height);
-  padding: 0.5rem 0.75rem;
+  padding: 0.35rem 0.5rem;
   background: var(--color-card);
   border: 3px solid var(--color-line);
   border-radius: var(--radius);
@@ -61,7 +61,7 @@
 
 .star {
   position: absolute;
-  font-size: clamp(1.1rem, 2vh, 1.5rem);
+  font-size: clamp(0.7rem, 1.8cqmin, 1.5rem);
   color: var(--color-timer);
   pointer-events: none;
 }

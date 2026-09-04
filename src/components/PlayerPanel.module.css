@@ -1,12 +1,40 @@
 .panel {
-  display: grid;
-  /* 分數 / 國字（撐開剩餘空間）/ 候選答案 / 回饋 */
-  grid-template-rows: auto 1fr auto auto;
-  gap: clamp(0.5rem, 1.4vh, 1rem);
+  /* 版面尺寸的基準：面板自己的大小，不是整個視窗。
+     面對面版面時視窗很高但面板只有一半，用 vh 算會整個爆版。 */
+  container-type: size;
+  min-width: 0;
+  min-height: 0;
   height: 100%;
-  padding: clamp(0.75rem, 2vh, 1.5rem) clamp(0.75rem, 1.8vw, 1.75rem);
   border-radius: calc(var(--radius) + 8px);
   overflow: hidden;
+}
+
+/* 只有直向（面對面）時上方玩家才轉 180 度；橫向是左右分割，兩個人都正著看 */
+@media (orientation: portrait) {
+  .flipped {
+    transform: rotate(180deg);
+  }
+}
+
+.inner {
+  display: grid;
+  /* 進度跑道 / 國字（撐開剩餘空間）/ 候選答案 / 回饋 */
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: clamp(0.25rem, 1.6cqh, 1rem);
+  height: 100%;
+  padding: clamp(0.5rem, 2.4cqh, 1.5rem) clamp(0.6rem, 3cqw, 1.75rem);
+
+  /* 這幾個字級只有遊戲面板在用，全部改成跟著面板大小走。
+     用 cqmin（寬高取小的那邊）：選項是橫排三個，只看高度會在手機橫向擠爆。 */
+  /* 國字盡量大，但面板矮的時候要留得下提示、年級與卡片內距，
+     所以同時受面板高度限制（38cqh 扣掉那幾行大約需要的 55px）。
+     平板夠高，min() 取到的一樣是 22cqmin，跟原本一樣大。 */
+  --font-character: clamp(2rem, min(22cqmin, 38cqh - 58px), 8.75rem);
+  --font-radical: clamp(1.5rem, 10cqmin, 4rem);
+  --font-word: clamp(1.05rem, 7cqmin, 3rem);
+  --choice-min-height: clamp(44px, 17cqmin, 120px);
+  --font-ui: clamp(1rem, 5.5cqmin, 2rem);
+  --font-ui-small: clamp(0.8rem, 4.2cqmin, 1.5rem);
 }
 
 .playerA {

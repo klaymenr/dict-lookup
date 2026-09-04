@@ -1,7 +1,9 @@
 # 查字典大挑戰 Dictionary Race
 
-國小 1-6 年級的**雙人查字典競賽遊戲**（難度可調）。兩個人共用一台 iPad（橫向），
-左右各占半邊畫面，同時作答，比誰先答對 N 個字。
+國小 1-6 年級的**雙人查字典競賽遊戲**（難度可調）。兩個人共用一台平板或手機，
+各占半邊畫面，同時作答，比誰先答對 N 個字。
+橫向是左右分割，直向會自動變成**上下面對面**（上面那位的畫面轉 180 度），
+所以手機直握也能玩，不必去解手機的方向鎖定。
 
 訓練重點：
 
@@ -42,11 +44,14 @@ npm run icons             # 重新產生 PWA icon
 - 答錯**不換題**：錯的選項留下紅框與 ✕、輕微晃動，小兔子／小貓咪出來提示。
 - 答錯後**停 1 秒才能再作答**（該邊選項變淡、提示泡泡在畫面上就是計時器），
   避免玩家不會查就無腦連點把答案試出來。處罰只鎖答錯的那一位，另一位照常作答。
-- 兩位玩家的題目、階段、回饋完全獨立，一邊答錯不會擋住另一邊；
-  **只有中央的「還剩下幾個字」是共用的**。
+- 兩位玩家的題目、階段、回饋**完全獨立**，一邊答錯不會擋住另一邊。
+- 每個人自己的面板上方有一條**賽跑跑道**：自己的小動物（🐰 / 🐱）與對手各站一隻，
+  兩隻的距離就是領先或落後，右邊寫著自己「還差幾個字」，下面一句話講明白現在是誰在前面。
+  不用再對照中央的共用進度。
 - **沒有時間限制**：結束條件是「誰先答對 N 個字」，預設 10 個（可設 5 / 10 / 15 / 20）。
-  中央顯示領先者距離獲勝還差幾個字，外圈跟著縮短，剩最後 2 個字時轉成警示色。
+  自己剩最後 2 個字時，跑道旁的「還差 N」轉成警示色。
 - 有人達標 → 中央顯示「○○ 完成！」→ 結果畫面（成績、勝負、再玩一次 / 回首頁）。
+  面對面時倒數與「○○ 完成！」會上下各印一份，兩位玩家都看得到正的字。
 
 ## 技術
 
@@ -54,16 +59,41 @@ React 18 + TypeScript + Vite，CSS Modules，Framer Motion，Web Audio API，
 LocalStorage，PWA（自寫 Service Worker）。沒有使用 Canvas 遊戲引擎，
 整個畫面都是 HTML DOM，方便處理中文字、按鈕與 iPad 觸控。
 
-### iPad 相關處理
+### 版面與裝置
 
-- 固定橫向；直向時顯示「請把 iPad 轉成橫向」提示。
-- **Multi-touch**：選項用 `onPointerDown` 直接反應，左右兩邊各自獨立，
+橫向左右分割、直向上下面對面，兩種版面都是同一份程式碼，只差 media query：
+
+| | 版面 |
+| --- | --- |
+| 平板橫向 | 左右分割（設計基準 1366 × 1024） |
+| 平板直向 | 上下面對面 |
+| 手機直向 | 上下面對面（推薦；不必解開方向鎖定） |
+| 手機橫向 | 左右分割 |
+
+- **尺寸跟著「面板自己的大小」算，不是跟著視窗**：`PlayerPanel` 是一個
+  `container-type: size` 的 container，字級與按鈕高度都用 `cqmin` 換算
+  （見 `PlayerPanel.module.css` 的 `.inner`）。面對面時視窗很高但面板只有一半，
+  用 `vh` 算會整個爆版。cq 單位要寫在 container 的子孫上才會對到這個面板，
+  所以 token 定義在 `.inner` 而不是 `.panel`。
+- **Multi-touch**：選項用 `onPointerDown` 直接反應，兩邊各自獨立，
   兩根手指同時按下時兩邊都會作答（已用 CDP 多點觸控測試驗證）。
 - `touch-action: manipulation`、`user-select: none`、擋掉 `gesturestart`，
   避免長按選字、雙擊放大與手勢誤判。
-- 選項按鈕高度 72–120 px，符合兒童觸控。
-- 版面用 responsive layout（`clamp()` + vh/vw），沒有寫死任何 iPad 尺寸；
-  基準解析度 1366 × 1024。
+- 選項按鈕高度 44–120 px：平板約 110 px，手機約 47–62 px
+  （手機每人只分到約 270–370 px 高的面板，塞不下平板原本的 72 px 下限）。
+  版面檢查涵蓋 iPad 橫向／直向、iPad mini、iPhone 15 橫向／直向／PWA、
+  iPhone SE 橫向／直向，以及 320 × 480 的極端情況：
+  沒有任何一塊超出面板或互相重疊，詞語階段用三字詞測也放得下。
+
+### 全螢幕與方向
+
+- **不鎖方向、也不去動系統的方向鎖定** —— 網頁本來就做不到
+  （Safari 沒有 `screen.orientation.lock()`，manifest 的 `orientation` 也被忽略），
+  而且兩種方向都有對應版面，鎖了只會跟使用者作對。manifest 寫 `"orientation": "any"`。
+- **全螢幕沒辦法「載入就自動進」**：所有瀏覽器都要求使用者手勢。
+  所以在「開始」按鈕的 onClick 裡順手呼叫（`src/utils/fullscreen.ts`），
+  不支援的裝置就當作沒發生。
+- 想要完全沒有瀏覽器介面：**加入主畫面**後從圖示啟動，第一個 frame 就是全螢幕。
 
 ### 難度分層
 
@@ -158,13 +188,14 @@ npm run check:deck                   # 發牌比例檢查
 
 ```
 src/
-├── components/    ScoreDisplay / CharacterCard / ChoicePanel / FeedbackMascot
-│                  PlayerPanel / CountdownClock / ActionButton
+├── components/    ProgressTrack / CharacterCard / ChoicePanel / FeedbackMascot
+│                  PlayerPanel / ActionButton
 ├── screens/       HomeScreen / GameScreen / ResultScreen / SettingsScreen
 ├── hooks/         useGame（遊戲邏輯與勝負判定）
 ├── data/          questions.json（由 scripts/build_questions.py 產生）
 ├── types/         game.ts / question.ts
-├── utils/         deck.ts（依難度抽牌）/ audio.ts / storage.ts / shuffle.ts / emoji.ts
+├── utils/         deck.ts（依難度抽牌）/ audio.ts / fullscreen.ts / storage.ts
+│                  shuffle.ts / emoji.ts
 └── styles/        global.css（色彩、字級、觸控尺寸等 token）
 data/              題庫的來源資料（生字表、字形、回歸測試基準）
 scripts/           build_questions.py / check-questions.mjs / check-deck.mjs / generate-icons.mjs
@@ -184,7 +215,9 @@ scripts/           build_questions.py / check-questions.mjs / check-deck.mjs / g
 
 - 所有可點擊元素都是 `<button>`，不使用假按鈕。
 - 顏色不是唯一提示：答錯有紅框 + ✕ + 晃動 + 角色文字；答對有綠框 + ✓ + 星星 + 音效。
-- 回饋區有 `aria-live`，鍵盤（Enter / Space）也能作答，`:focus-visible` 有明顯外框。
+- 回饋區與跑道下方的狀態句都有 `aria-live`（狀態句會唸出「還差 N 個字、領先／落後幾個」，
+  不必看跑道上小動物的位置）；鍵盤（Enter / Space）也能作答，`:focus-visible` 有明顯外框。
+- 面對面時重複印出的倒數字樣掛 `aria-hidden`，不會重複報讀。
 - 支援 `prefers-reduced-motion`。
 
 ## 第一版不做

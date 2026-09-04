@@ -7,6 +7,7 @@ import { useGame } from './hooks/useGame';
 import type { PlayerId, Settings } from './types/game';
 import { loadSettings, saveSettings } from './utils/storage';
 import { setSoundEnabled, unlockAudio } from './utils/audio';
+import { enterFullscreen } from './utils/fullscreen';
 import styles from './App.module.css';
 
 type Screen = 'home' | 'game' | 'result' | 'settings';
@@ -36,7 +37,10 @@ export default function App() {
   const game = useGame(settings, handleFinish);
 
   const startGame = useCallback(() => {
-    unlockAudio(); // iPad Safari 需要使用者手勢才能播放聲音
+    // 這兩件事都必須在使用者手勢裡同步做：
+    // Safari 要手勢才能播聲音，Fullscreen API 也一律要手勢才准進全螢幕。
+    unlockAudio();
+    enterFullscreen();
     setFinishedBanner(null);
     setScreen('game');
     game.start();
@@ -53,17 +57,6 @@ export default function App() {
 
   return (
     <div className={styles.app}>
-      <div className={styles.rotateNotice} role="alert">
-        <span className={styles.rotateIcon} aria-hidden="true">
-          🔄
-        </span>
-        <p className={styles.rotateText}>
-          請把 iPad 轉成橫向
-          <br />
-          兩個人才能一起玩喔！
-        </p>
-      </div>
-
       {screen === 'home' && (
         <HomeScreen settings={settings} onStart={startGame} onOpenSettings={() => setScreen('settings')} />
       )}
@@ -77,7 +70,6 @@ export default function App() {
           player1={game.player1}
           player2={game.player2}
           targetScore={game.targetScore}
-          remainingToWin={game.remainingToWin}
           active={game.status === 'playing'}
           countdownValue={game.countdownValue}
           finishedBanner={finishedBanner}

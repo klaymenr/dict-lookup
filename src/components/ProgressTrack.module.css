@@ -1,0 +1,120 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  font-size: var(--font-ui-small);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.name {
+  flex: 0 0 auto;
+  font-size: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* 跑道：兩隻小動物的距離就是領先／落後 */
+.track {
+  position: relative;
+  flex: 1 1 auto;
+  /* 小動物是絕對定位，靠這個高度撐開（對手在軌道上方，要留位子） */
+  height: 2.4em;
+  /* 左右各留半隻的寬度，0% 和 100% 才不會被切到 */
+  margin: 0 1em;
+  border-radius: 999px;
+}
+
+.rail {
+  position: absolute;
+  top: 68%;
+  left: -0.4em;
+  right: -0.4em;
+  height: 0.4em;
+  transform: translateY(-50%);
+  background: rgba(48, 46, 43, 0.12);
+  border-radius: 999px;
+}
+
+.runner {
+  position: absolute;
+  top: 68%;
+  /* left 由 framer-motion 動畫控制，transform 留給置中與彈跳 */
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+
+/* 對手浮在軌道上方一點：平手時兩隻站在同一格也看得到兩隻 */
+.opponent {
+  font-size: 1.05em;
+  opacity: 0.55;
+  transform: translate(-50%, -125%);
+  z-index: 1;
+}
+
+.self {
+  font-size: 1.5em;
+  z-index: 2;
+  filter: drop-shadow(0 2px 3px rgba(48, 46, 43, 0.25));
+}
+
+.runnerFace {
+  display: block;
+}
+
+.goal {
+  position: absolute;
+  top: 68%;
+  left: 100%;
+  transform: translate(0.15em, -50%);
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* 被超車：整條跑道閃一下（自己那隻同時換成驚訝表情） */
+.flash .rail {
+  animation: flash 0.45s ease-in-out 2;
+}
+
+@keyframes flash {
+  50% {
+    background: rgba(217, 108, 95, 0.45);
+  }
+}
+
+.remaining {
+  flex: 0 0 auto;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
+.remaining strong {
+  font-size: 1.5em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+/* 剩最後兩個字轉成警示色（原本在中央進度上，現在各自面板各有一份） */
+.warning,
+.warning strong {
+  color: var(--color-timer);
+}
+
+.status {
+  margin: 0;
+  padding-left: 0.2em;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  /* 文字長短會變，固定一行高度避免整個面板上下跳 */
+  min-height: 1.4em;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

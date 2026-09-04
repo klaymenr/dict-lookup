@@ -11,15 +11,12 @@
   --color-card: #fffdf9;
   --color-line: rgba(48, 46, 43, 0.14);
 
-  /* 5.2 字級：國字最大，其他依序縮小 */
-  --font-character: clamp(5rem, 13vh, 8.75rem);
-  --font-radical: clamp(3rem, 6.2vh, 4rem);
-  --font-word: clamp(2.25rem, 4.4vh, 3rem);
-  --font-ui: clamp(1.5rem, 2.6vh, 2rem);
-  --font-ui-small: clamp(1.125rem, 2vh, 1.5rem);
+  /* 5.2 字級：國字最大，其他依序縮小。
+     這裡是首頁／設定／結果畫面用的；遊戲面板裡的字級改由面板自己的大小決定
+     （見 PlayerPanel.module.css 的 .inner，用 container query 覆寫）。 */
+  --font-ui: clamp(1.25rem, 2.6vh, 2rem);
+  --font-ui-small: clamp(1rem, 2vh, 1.5rem);
 
-  /* 19. 兒童觸控：選項按鈕至少 72px 高 */
-  --choice-min-height: clamp(72px, 12vh, 120px);
   --radius: 20px;
 
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei',

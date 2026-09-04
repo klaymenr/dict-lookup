@@ -24,6 +24,8 @@ export interface Feedback {
 export interface PlayerState {
   id: PlayerId;
   name: string;
+  /** 這一位玩家的固定動物：跑道上的角色與回饋泡泡都用同一隻 */
+  mascot: MascotId;
   /** 已經完整答對的字數 */
   score: number;
   question: Question;

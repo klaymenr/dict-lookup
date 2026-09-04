@@ -22,7 +22,8 @@ const WRONG_PENALTY_MS = 1000;
 /** 開場 3、2、1 每個數字停留多久 */
 const COUNTDOWN_STEP_MS = 800;
 
-const MASCOTS: MascotId[] = ['rabbit', 'cat'];
+/** 每位玩家固定一隻動物，跑道上才認得出哪一隻是自己 */
+const MASCOTS: Record<PlayerId, MascotId> = { player1: 'rabbit', player2: 'cat' };
 
 const WRONG_MESSAGES = ['再想想看！', '差一點，再試一次！', '沒關係，換一個看看！', '別急，慢慢找！'];
 const RADICAL_OK_MESSAGES = ['部首找到了！', '答對了！', '就是這個部首！'];
@@ -34,6 +35,7 @@ function createPlayer(id: PlayerId, name: string, question: Question): PlayerSta
   return {
     id,
     name,
+    mascot: MASCOTS[id],
     score: 0,
     question,
     stage: 'radical',
@@ -48,8 +50,6 @@ function createPlayer(id: PlayerId, name: string, question: Question): PlayerSta
 export interface UseGameApi extends GameState {
   /** 3 / 2 / 1 / 0（0 表示「開始！」），null 表示沒有在倒數 */
   countdownValue: number | null;
-  /** 領先者距離獲勝還差幾個字：中央「還剩下幾個字」用的 */
-  remainingToWin: number;
   start: () => void;
   backToIdle: () => void;
   selectAnswer: (playerId: PlayerId, answer: string) => void;
@@ -227,7 +227,7 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
           locked: true,
           feedback: {
             kind: 'wrong',
-            mascot: pickOne(MASCOTS),
+            mascot: MASCOTS[playerId],
             message: pickOne(WRONG_MESSAGES),
             token,
           },
@@ -255,7 +255,7 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
           locked: true,
           feedback: {
             kind: 'correct',
-            mascot: pickOne(MASCOTS),
+            mascot: MASCOTS[playerId],
             message: pickOne(RADICAL_OK_MESSAGES),
             token,
           },
@@ -284,7 +284,7 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
         locked: true,
         feedback: {
           kind: 'correct',
-          mascot: pickOne(MASCOTS),
+          mascot: MASCOTS[playerId],
           message: pickOne(WORD_OK_MESSAGES),
           token,
         },
@@ -318,16 +318,10 @@ export function useGame(settings: Settings, onFinish: (winner: PlayerId | null) 
 
   // 待機時就跟著設定走，這樣在設定頁改完目標字數，首頁與中央顯示會立刻更新
   const targetScore = state.status === 'idle' ? settings.targetScore : state.targetScore;
-  const remainingToWin = Math.max(
-    0,
-    Math.min(targetScore - state.player1.score, targetScore - state.player2.score),
-  );
-
   return {
     ...state,
     targetScore,
     countdownValue,
-    remainingToWin,
     start,
     backToIdle,
     selectAnswer,

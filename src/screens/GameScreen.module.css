@@ -1,32 +1,60 @@
 .screen {
   position: relative;
   display: grid;
-  /* 4. 玩家 A 46% / 中央計時器 8% / 玩家 B 46% */
-  grid-template-columns: 46fr 8fr 46fr;
+  /* 橫向：左右各一半（中央共用進度已移除，改成每人自己的跑道） */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: clamp(0.25rem, 0.8vw, 0.75rem);
   height: 100%;
-  padding: clamp(0.5rem, 1.5vh, 1rem);
+  padding: clamp(0.35rem, 1.5vh, 1rem);
   background: var(--color-bg);
 }
 
-.center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* 直向：上下各一半，上面那位轉 180 度，兩人隔著螢幕面對面 */
+@media (orientation: portrait) {
+  .screen {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(0.25rem, 0.8vh, 0.75rem);
+  }
 }
 
 .overlay {
   position: absolute;
   inset: 0;
+  z-index: 10;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: rgba(250, 248, 243, 0.92);
-  z-index: 10;
+}
+
+.overlayMain,
+.overlayMirror {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 橫向只需要一份；直向才上下各一份給兩位玩家看 */
+.overlayMirror {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  .overlay {
+    justify-content: space-around;
+  }
+
+  .overlayMirror {
+    display: flex;
+    transform: rotate(180deg);
+  }
 }
 
 .overlayText {
-  font-size: clamp(4rem, 18vh, 11rem);
+  font-size: clamp(3rem, 15vmin, 11rem);
   font-weight: 800;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
@@ -37,7 +65,7 @@
 }
 
 .finished {
-  font-size: clamp(2.5rem, 11vh, 6rem);
+  font-size: clamp(2rem, 9vmin, 6rem);
   font-weight: 800;
   color: var(--color-correct);
   letter-spacing: 0.08em;
